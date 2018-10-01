@@ -37,10 +37,22 @@ app.get('/', async (req, res) => {
 app.post('/profile', upload.single('avatar'), async (req, res) => {
     try {
         const col = await loadCollection(COLLECTION_NAME, db);
+        console.log(req.body.test);
+        //const data = col.insert({file:req.file,imprint:req.body.test});
         const data = col.insert(req.file);
+        data.text = req.body.test;
 
         db.saveDatabase();
         res.send({ id: data.$loki, fileName: data.filename, originalName: data.originalname });
+        let line = data.filename + "," + req.body.test;
+        var fs = require('fs');
+        fs.writeFile("/tmp/test.txt",line, function (err) {
+            if (err) {
+                return console.log(err);
+            }
+
+            console.log("The file was saved!");
+        });
     } catch (err) {
         res.sendStatus(400);
     }
