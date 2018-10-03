@@ -41,18 +41,48 @@ app.post('/profile', upload.single('avatar'), async (req, res) => {
         //const data = col.insert({file:req.file,imprint:req.body.test});
         const data = col.insert(req.file);
         data.text = req.body.test;
+        data.imprint = req.body.imprint;
+        data.boundingBoxes = req.body.boundingBoxes;
 
         db.saveDatabase();
-        res.send({ id: data.$loki, fileName: data.filename, originalName: data.originalname });
+        
         let line = data.filename + "," + req.body.test;
         var fs = require('fs');
-        fs.writeFile("/tmp/test.txt",line, function (err) {
+
+        var jsondata = fs.readFileSync(`${UPLOAD_PATH}/` + "test.json",function(err){
+            if(err){
+                return console.log(err);
+            }
+            console.log("The file was saved!");
+        });
+        
+        var json = JSON.parse(jsondata);
+        console.log(json)
+        json.push({
+            name:data.filename,
+            imprint:data.imprint,
+            boundingBoxes:data.boundingBoxes
+        })
+        fs.writeFile(`${UPLOAD_PATH}/` + "test.json", JSON.stringify(json), function (err) {
             if (err) {
                 return console.log(err);
             }
 
             console.log("The file was saved!");
         });
+        res.send({ id: data.$loki, fileName: data.filename, originalName: data.originalname });
+         //var json = JSON.parse(jsondata);
+        // console.log(json)
+
+
+
+        // fs.writeFile(`${UPLOAD_PATH}/` + "test.json",line, function (err) {
+        //     if (err) {
+        //         return console.log(err);
+        //     }
+
+        //     console.log("The file was saved!");
+        // });
     } catch (err) {
         res.sendStatus(400);
     }
