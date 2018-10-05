@@ -10,13 +10,28 @@ import { imageFilter, loadCollection, cleanFolder } from './utils';
 const DB_NAME = 'db.json';
 const COLLECTION_NAME = 'images';
 const UPLOAD_PATH = 'uploads';
-const upload = multer({ dest: `${UPLOAD_PATH}/`, fileFilter: imageFilter });
+//const upload = multer({ dest: `${UPLOAD_PATH}/`, fileFilter: imageFilter });
 const db = new Loki(`${UPLOAD_PATH}/${DB_NAME}`, { persistenceMethod: 'fs' });
 
 // optional: clean all data before start
 // cleanFolder(UPLOAD_PATH);
 
 // app
+
+//const multer = require('multer')
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, `${UPLOAD_PATH}/`)
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  }
+})
+const upload = multer({storage: storage})
+
+
+
+
 const app = express();
 app.use(cors());
 
@@ -49,25 +64,32 @@ app.post('/profile', upload.single('avatar'), async (req, res) => {
         let line = data.filename + "," + req.body.test;
         var fs = require('fs');
 
-        var jsondata = fs.readFileSync(`${UPLOAD_PATH}/` + "test.json",function(err){
-            if(err){
-                return console.log(err);
-            }
-            console.log("The file was saved!");
-        });
+        // var jsondata = fs.readFileSync(`${UPLOAD_PATH}/` + "test.json",function(err){
+        //     if(err){
+        //         return console.log(err);
+        //     }
+        //     console.log("The file was saved!");
+        // });
         
-        var json = JSON.parse(jsondata);
-        console.log(json)
-        json.push({
+        // var json = JSON.parse(jsondata);
+        // console.log(json)
+        // json.push({
+        //     name:data.filename,
+        //     imprint:data.imprint,
+        //     boundingBoxes:data.boundingBoxes
+        // })
+
+        var dataToWrite = {
             name:data.filename,
             imprint:data.imprint,
             boundingBoxes:data.boundingBoxes
-        })
-        fs.writeFile(`${UPLOAD_PATH}/` + "test.json", JSON.stringify(json), function (err) {
+        }
+        
+        console.log(dataToWrite);
+        fs.writeFile(`${UPLOAD_PATH}/` +data.filename +".json", JSON.stringify(dataToWrite), function (err) {
             if (err) {
                 return console.log(err);
             }
-
             console.log("The file was saved!");
         });
         res.send({ id: data.$loki, fileName: data.filename, originalName: data.originalname });
